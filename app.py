@@ -55,4 +55,5 @@ if "question" in st.session_state:
         st.info("No input required for tips.")
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=7860)
+    os.system("streamlit run app.py --server.port 7860 --server.address 0.0.0.0")
+
