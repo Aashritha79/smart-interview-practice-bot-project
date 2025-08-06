@@ -1,3 +1,4 @@
+import torch
 import streamlit as st
 from transformers import pipeline
 from huggingface_hub import login
