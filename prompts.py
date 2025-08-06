@@ -1,5 +1,4 @@
 # prompts.py
-
 prompt_map = {
     "Behavioral": [
         "Generate a behavioral interview question about leadership.",
