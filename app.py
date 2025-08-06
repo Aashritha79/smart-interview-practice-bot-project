@@ -6,14 +6,8 @@ import os
 
 import streamlit as st
 
-try:
-    hf_token = st.secrets.get("HF_TOKEN") or os.environ.get("HF_TOKEN")
-    if not hf_token:
-        st.error("HF_TOKEN not found in secrets!")
-        st.stop()
-except:
-    st.error("Error accessing HF_TOKEN!")
-    st.stop()
+hf_token = st.secrets["HF_TOKEN"] 
+login(token=hf_token)
 
 
 flan_generator = pipeline("text2text-generation", model="google/flan-t5-base")
