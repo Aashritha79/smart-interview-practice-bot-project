@@ -3,12 +3,15 @@ from transformers import pipeline
 from huggingface_hub import login
 from prompts import prompt_map
 import os
-
 import streamlit as st
 
-hf_token = st.secrets["HF_TOKEN"] 
-login(token=hf_token)
-
+try:
+    hf_token = st.secrets["HF_TOKEN"]
+except:
+    hf_token = os.environ.get("HF_TOKEN")
+    if not hf_token:
+        st.error("HF_TOKEN not found in secrets or environment variables")
+        st.stop()
 
 flan_generator = pipeline("text2text-generation", model="google/flan-t5-base")
 sentiment_analyzer = pipeline("sentiment-analysis", model="cardiffnlp/twitter-roberta-base-sentiment")
