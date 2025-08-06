@@ -1,29 +1,36 @@
-import torch
+import torch  # noqa: F401
 import streamlit as st
 from transformers import pipeline
 from huggingface_hub import login
 from prompts import prompt_map
 import os
-import streamlit as st
 
 try:
     hf_token = st.secrets["HF_TOKEN"]
 except:
     hf_token = os.environ.get("HF_TOKEN")
     if not hf_token:
-        st.error("HF_TOKEN not found in secrets or environment variables")
-        st.stop()
+        st.warning("No HF token - using public models only")
 
-flan_generator = pipeline("text2text-generation", model="google/flan-t5-base")
-sentiment_analyzer = pipeline("sentiment-analysis", model="cardiffnlp/twitter-roberta-base-sentiment")
+# Lazy loading with caching - only load when needed
+@st.cache_resource
+def get_question_generator():
+    return pipeline("text2text-generation", model="google/flan-t5-small")  # Using smaller model
+
+@st.cache_resource  
+def get_sentiment_analyzer():
+    return pipeline("sentiment-analysis", model="cardiffnlp/twitter-roberta-base-sentiment-latest")
 
 def generate_question(prompt):
-    return flan_generator(prompt, max_new_tokens=100, do_sample=False)[0]['generated_text']
+    generator = get_question_generator()
+    return generator(prompt, max_new_tokens=100, do_sample=False)[0]['generated_text']
 
 def analyze_answer(answer):
     if len(answer.strip().split()) < 5:
         return "⚠️ Your answer is too short. Add more context."
-    result = sentiment_analyzer(answer)[0]
+    
+    analyzer = get_sentiment_analyzer()
+    result = analyzer(answer)[0]
     label = result['label']
     if label == "LABEL_2":
         return "✅ Confident and positive tone. Great job!"
@@ -40,9 +47,10 @@ category = st.selectbox("Choose question type:", ["Behavioral", "Technical", "Ti
 index = st.number_input("Question Number (1 to 3)", min_value=1, max_value=3, value=1)
 
 if st.button("Ask Me a Question"):
-    prompt = prompt_map[category][index - 1]
-    question = generate_question(prompt)
-    st.session_state["question"] = question
+    with st.spinner("Generating question..."):
+        prompt = prompt_map[category][index - 1]
+        question = generate_question(prompt)
+        st.session_state["question"] = question
 
 if "question" in st.session_state:
     st.subheader("AI Generated Question:")
@@ -51,7 +59,8 @@ if "question" in st.session_state:
     if category != "Tips":
         answer = st.text_area("Your Answer:", key="user_answer")
         if st.button("Get Feedback"):
-            feedback = analyze_answer(answer)
-            st.success(feedback)
+            with st.spinner("Analyzing your answer..."):
+                feedback = analyze_answer(answer)
+                st.success(feedback)
     else:
         st.info("No input required for tips.")
