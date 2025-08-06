@@ -1,4 +1,4 @@
-import torch  # noqa: F401
+import torch 
 import streamlit as st
 from transformers import pipeline
 from huggingface_hub import login
@@ -11,8 +11,7 @@ except:
     hf_token = os.environ.get("HF_TOKEN")
     if not hf_token:
         st.warning("No HF token - using public models only")
-
-# Lazy loading with caching - only load when needed
+        
 @st.cache_resource
 def get_question_generator():
     return pipeline("text2text-generation", model="google/flan-t5-small")  # Using smaller model
