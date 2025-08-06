@@ -4,12 +4,16 @@ from huggingface_hub import login
 from prompts import prompt_map
 import os
 
-from dotenv import load_dotenv
-load_dotenv()
+import streamlit as st
 
-
-hf_token = os.environ.get("HF_TOKEN")
-login(hf_token)
+try:
+    hf_token = st.secrets.get("HF_TOKEN") or os.environ.get("HF_TOKEN")
+    if not hf_token:
+        st.error("HF_TOKEN not found in secrets!")
+        st.stop()
+except:
+    st.error("Error accessing HF_TOKEN!")
+    st.stop()
 
 
 flan_generator = pipeline("text2text-generation", model="google/flan-t5-base")
@@ -53,7 +57,3 @@ if "question" in st.session_state:
             st.success(feedback)
     else:
         st.info("No input required for tips.")
-
-if __name__ == "__main__":
-    os.system("streamlit run app.py --server.port 7860 --server.address 0.0.0.0")
-

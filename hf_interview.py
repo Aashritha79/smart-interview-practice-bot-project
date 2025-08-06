@@ -2,12 +2,16 @@ import os
 from transformers import pipeline
 from huggingface_hub import login
 from prompts import prompt_map
+import streamlit as st
 
-from dotenv import load_dotenv
-load_dotenv()
-
-hf_token = os.environ.get("HF_TOKEN")
-login(hf_token)
+try:
+    hf_token = st.secrets.get("HF_TOKEN") or os.environ.get("HF_TOKEN")
+    if not hf_token:
+        st.error("HF_TOKEN not found in secrets!")
+        st.stop()
+except:
+    st.error("Error accessing HF_TOKEN!")
+    st.stop()
 
 
 
