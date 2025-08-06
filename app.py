@@ -53,3 +53,6 @@ if "question" in st.session_state:
             st.success(feedback)
     else:
         st.info("No input required for tips.")
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=7860)
